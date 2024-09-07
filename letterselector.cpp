@@ -5,9 +5,11 @@
 #include <QLabel>
 #include <QToolButton>
 
-LetterSelector::LetterSelector(QAbstractItemModel* strings, std::int32_t letterPosition, QWidget* parent)
+LetterSelector::LetterSelector(int32_t selectorId, QAbstractItemModel* strings, std::int32_t letterPosition, QWidget* parent)
 : QWidget(parent)
+, mId(selectorId)
 , mLetterPosition(letterPosition)
+, mPinButton(new QToolButton(this))
 {
     mFilterModel.setSourceModel(strings);
 
@@ -23,6 +25,7 @@ LetterSelector::LetterSelector(QAbstractItemModel* strings, std::int32_t letterP
     auto* letterLabel = new QLabel(this);
     auto updateLetterLabel = [this, letterLabel] {
         const auto text = getSelectedText();
+        emit stateChanged(mId, false, text);
         std::int32_t pos = 0;
         for (const auto letter : text) {
             if (!letter.isSpace()) {
@@ -37,18 +40,17 @@ LetterSelector::LetterSelector(QAbstractItemModel* strings, std::int32_t letterP
     connect(mListView.selectionModel(), &QItemSelectionModel::selectionChanged, this, updateLetterLabel);
     rowLayout->addWidget(letterLabel);
 
-    auto* pinButton = new QToolButton(this);
-    pinButton->setText("P");
-    pinButton->setCheckable(true);
-    connect(pinButton, &QToolButton::toggled, &mListView, &QWidget::setDisabled);
+    mPinButton->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+    mPinButton->setCheckable(true);
+    connect(mPinButton, &QToolButton::toggled, &mListView, &QWidget::setDisabled);
     auto emitSelection = [this](bool checked) {
         const auto text = getSelectedText();
         if (!text.isEmpty()) {
-            emit pinnedChanged(checked, text);
+            emit stateChanged(mId, checked, text);
         }
     };
-    connect(pinButton, &QToolButton::toggled, &mListView, emitSelection);
-    rowLayout->addWidget(pinButton);
+    connect(mPinButton, &QToolButton::toggled, &mListView, emitSelection);
+    rowLayout->addWidget(mPinButton);
 
     mainLayout->addLayout(rowLayout);
 }
@@ -72,6 +74,19 @@ void LetterSelector::updateFilter(bool enable, const QString& text)
         filter = QString("^(?!") + mFilteredStrings.join('|') + "$).*$";
     }
     mFilterModel.setFilterRegularExpression(filter);
+}
+
+void LetterSelector::setState(bool pin, const QString& text)
+{
+    for (int i = 0; i < mFilterModel.rowCount(); i += 1) {
+        const auto idx = mFilterModel.index(i, 0);
+        const auto textData = mFilterModel.data(idx).toString();
+        if (textData == text) {
+            mListView.selectionModel()->select(idx, QItemSelectionModel::Select);
+            mPinButton->setChecked(pin);
+            break;
+        }
+    }
 }
 
 // private

@@ -4,24 +4,29 @@
 
 #include <cstdint>
 
+class QToolButton;
+
 class LetterSelector
 : public QWidget
 {
     Q_OBJECT
 
 public:
-    LetterSelector(QAbstractItemModel* strings, std::int32_t letterPosition, QWidget* parent = nullptr);
+    LetterSelector(std::int32_t selectorId, QAbstractItemModel* strings, std::int32_t letterPosition, QWidget* parent = nullptr);
     ~LetterSelector();
     void updateFilter(bool enable, const QString& text);
+    void setState(bool pin, const QString& text);
 
 signals:
-    void pinnedChanged(bool isPinned, const QString& text);
+    void stateChanged(std::int32_t selectorId, bool isPinned, const QString& text);
 
 private:
     QString getSelectedText();
 
+    const std::int32_t mId;
     QListView mListView;
     QSortFilterProxyModel mFilterModel {};
-    std::int32_t mLetterPosition;
+    const std::int32_t mLetterPosition;
     QStringList mFilteredStrings;
+    QToolButton* mPinButton;
 };

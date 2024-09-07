@@ -5,6 +5,8 @@
 #include <QVBoxLayout>
 #include <QStringList>
 #include <QStringListModel>
+#include <QStandardPaths>
+#include <QCloseEvent>
 
 #include <string>
 #include <string_view>
@@ -40,6 +42,18 @@ constexpr std::array<std::wstring_view, 20> stringArray
     hegelg_16,      estern_17,          pinie_18,       ksonne_19,          sigo_20
 };
 
+constexpr auto selectorState = "SelectorState";
+namespace
+{
+
+QSettings getSettings()
+{
+    const auto settingsLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    return QSettings(settingsLocation, QSettings::IniFormat);
+}
+
+}
+
 MainWindow::MainWindow()
 {
     QStringList stringList;
@@ -52,18 +66,24 @@ MainWindow::MainWindow()
     auto* mainWidget = new QWidget(this);
     auto* mainLayout = new QVBoxLayout(mainWidget);
 
-    auto pinnedChanged = [this] (bool isPinned, const QString& text) {
+    auto stateChanged = [this] (std::int32_t selectorId, bool isPinned, const QString& text) {
+        const auto sel = QString::number(selectorId);
+        const auto pin = isPinned ? QString("true") : QString("false");
+        mSelectorState[sel] = QStringList{pin, text};
         emit updateFilter(!isPinned, text);
     };
 
     static constexpr auto entriesPerRow = 5;
-    auto addSelectorRow = [this,mainLayout, strings, pinnedChanged] (std::array<std::int32_t, entriesPerRow> positions) {
+    std::int32_t selectorId = 0;
+    auto addSelectorRow = [this,mainLayout, strings, stateChanged, &selectorId] (std::array<std::int32_t, entriesPerRow> positions) {
         auto* row = new QHBoxLayout;
         for (auto pos : positions) {
-            auto* letterSel = new LetterSelector(strings, pos);
+            auto* letterSel = new LetterSelector(selectorId, strings, pos, this);
             row->addWidget(letterSel);
-            connect(letterSel, &LetterSelector::pinnedChanged, letterSel, pinnedChanged);
+            connect(letterSel, &LetterSelector::stateChanged, letterSel, stateChanged);
             connect(this, &MainWindow::updateFilter, letterSel, &LetterSelector::updateFilter);
+            mLetterSelectors.push_back(letterSel);
+            selectorId += 1;
         }
         mainLayout->addLayout(row);
     };
@@ -77,6 +97,29 @@ MainWindow::MainWindow()
     addSelectorRow({3,                  4,                  5,                  6,                  0});
 
     setCentralWidget(mainWidget);
+
+    const auto settings = getSettings();
+    mSelectorState = settings.value(selectorState).toMap();
+    auto itr = mSelectorState.begin();
+    while (itr != mSelectorState.end()) {
+        auto selectorId = itr.key().toInt();
+        if (selectorId >= 0 && selectorId < 4 * entriesPerRow) {
+            const auto state = itr.value().toStringList();
+            if (state.size() == 2) {
+                const bool pinned = state[0] == "true";
+                const auto& text = state[1];
+                mLetterSelectors[static_cast<std::size_t>(selectorId)]->setState(pinned, text);
+            }
+        }
+        itr++;
+    }
 }
 
 MainWindow::~MainWindow() = default;
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    auto settings = getSettings();
+    settings.setValue(selectorState, mSelectorState);
+    event->accept();
+}
