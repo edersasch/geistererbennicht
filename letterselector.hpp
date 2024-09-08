@@ -22,6 +22,7 @@ signals:
     void stateChanged(std::int32_t selectorId, bool isPinned, const QString& text);
 
 private:
+    QModelIndex getSelectedIndex();
     QString getSelectedText();
 
     const std::int32_t mId;

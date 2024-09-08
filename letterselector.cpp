@@ -15,9 +15,9 @@ LetterSelector::LetterSelector(int32_t selectorId, QAbstractItemModel* strings, 
 
     auto* mainLayout = new QVBoxLayout(this);
 
-    mListView.setModel(&mFilterModel);
     mListView.setEditTriggers(QAbstractItemView::NoEditTriggers);
     mListView.setSelectionMode(QAbstractItemView::SingleSelection);
+    mListView.setModel(&mFilterModel);
     mainLayout->addWidget(&mListView);
 
     auto* rowLayout = new QHBoxLayout;
@@ -26,10 +26,11 @@ LetterSelector::LetterSelector(int32_t selectorId, QAbstractItemModel* strings, 
     rowLayout->addWidget(positionLabel);
 
     auto* letterLabel = new QLabel(this);
-    auto updateLetterLabel = [this, letterLabel] {
+    auto handleSelectionChanged = [this, letterLabel] {
         const auto text = getSelectedText();
         std::int32_t pos = 0;
         mLetter = '_';
+        letterLabel->setText(QString());
         for (const auto letter : text) {
             if (!letter.isSpace()) {
                 if (pos == mLetterPosition) {
@@ -40,9 +41,10 @@ LetterSelector::LetterSelector(int32_t selectorId, QAbstractItemModel* strings, 
                 pos += 1;
             }
         }
+        mPinButton->setDisabled(text.isEmpty());
         emit stateChanged(mId, false, text);
     };
-    connect(mListView.selectionModel(), &QItemSelectionModel::selectionChanged, this, updateLetterLabel);
+    connect(mListView.selectionModel(), &QItemSelectionModel::selectionChanged, this, handleSelectionChanged);
     rowLayout->addWidget(letterLabel);
 
     mPinButton->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
@@ -53,6 +55,7 @@ LetterSelector::LetterSelector(int32_t selectorId, QAbstractItemModel* strings, 
         emit stateChanged(mId, checked, text);
     };
     connect(mPinButton, &QToolButton::toggled, &mListView, emitSelection);
+    handleSelectionChanged();
     rowLayout->addWidget(mPinButton);
 
     auto* clearButton = new QToolButton(this);
@@ -83,6 +86,8 @@ void LetterSelector::updateFilter(bool enable, const QString& text)
         filter = QString("^(?!") + mFilteredStrings.join('|') + "$).*$";
     }
     mFilterModel.setFilterRegularExpression(filter);
+    const auto idx = getSelectedIndex();
+    mListView.scrollTo(idx);
 }
 
 void LetterSelector::setState(bool pin, const QString& text)
@@ -106,12 +111,21 @@ QChar LetterSelector::getLetter()
 
 // private
 
+QModelIndex LetterSelector::getSelectedIndex()
+{
+    QModelIndex idx;
+    const auto idxs = mListView.selectionModel()->selectedIndexes();
+    if (!idxs.empty()) {
+        idx = idxs.first();
+    }
+    return idx;
+}
+
 QString LetterSelector::getSelectedText()
 {
     QString text;
-    const auto idxs = mListView.selectionModel()->selectedIndexes();
-    if (!idxs.empty()) {
-        const auto idx = idxs.first();
+    const auto idx = getSelectedIndex();
+    if (idx.isValid()) {
         text = mFilterModel.data(idx).toString();
     }
     return text;
