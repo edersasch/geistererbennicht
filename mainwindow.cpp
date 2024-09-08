@@ -7,6 +7,8 @@
 #include <QStringListModel>
 #include <QStandardPaths>
 #include <QCloseEvent>
+#include <QLabel>
+#include <QTimer>
 
 #include <string>
 #include <string_view>
@@ -66,16 +68,22 @@ MainWindow::MainWindow()
     auto* mainWidget = new QWidget(this);
     auto* mainLayout = new QVBoxLayout(mainWidget);
 
-    auto stateChanged = [this] (std::int32_t selectorId, bool isPinned, const QString& text) {
+    auto* solution = new QLabel("_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _", this);
+
+    auto stateChanged = [this, solution] (std::int32_t selectorId, bool isPinned, const QString& text) {
         const auto sel = QString::number(selectorId);
         const auto pin = isPinned ? QString("true") : QString("false");
         mSelectorState[sel] = QStringList{pin, text};
+        const auto letter = mLetterSelectors[selectorId]->getLetter();
+        auto solutionText = solution->text();
+        solutionText[selectorId * 2] = letter;
+        solution->setText(solutionText);
         emit updateFilter(!isPinned, text);
     };
 
     static constexpr auto entriesPerRow = 5;
     std::int32_t selectorId = 0;
-    auto addSelectorRow = [this,mainLayout, strings, stateChanged, &selectorId] (std::array<std::int32_t, entriesPerRow> positions) {
+    auto addSelectorRow = [this, mainLayout, strings, stateChanged, &selectorId] (std::array<std::int32_t, entriesPerRow> positions) {
         auto* row = new QHBoxLayout;
         for (auto pos : positions) {
             auto* letterSel = new LetterSelector(selectorId, strings, pos, this);
@@ -96,6 +104,8 @@ MainWindow::MainWindow()
     //              ?                   ?                   ?                   ?                   Regenbogenfalter!!!
     addSelectorRow({3,                  4,                  5,                  6,                  0});
 
+    mainLayout->addWidget(solution);
+
     setCentralWidget(mainWidget);
 
     const auto settings = getSettings();
@@ -106,9 +116,12 @@ MainWindow::MainWindow()
         if (selectorId >= 0 && selectorId < 4 * entriesPerRow) {
             const auto state = itr.value().toStringList();
             if (state.size() == 2) {
-                const bool pinned = state[0] == "true";
-                const auto& text = state[1];
-                mLetterSelectors[static_cast<std::size_t>(selectorId)]->setState(pinned, text);
+                auto setState = [this, state, selectorId] {
+                    const bool pinned = state[0] == "true";
+                    const auto &text = state[1];
+                    mLetterSelectors[static_cast<std::size_t>(selectorId)]->setState(pinned, text);
+                };
+                QTimer::singleShot(0, this, setState);
             }
         }
         itr++;

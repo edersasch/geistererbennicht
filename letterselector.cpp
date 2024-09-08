@@ -22,20 +22,25 @@ LetterSelector::LetterSelector(int32_t selectorId, QAbstractItemModel* strings, 
 
     auto* rowLayout = new QHBoxLayout;
 
+    auto* positionLabel = new QLabel(QString::number(mLetterPosition + 1) + ": ", this);
+    rowLayout->addWidget(positionLabel);
+
     auto* letterLabel = new QLabel(this);
     auto updateLetterLabel = [this, letterLabel] {
         const auto text = getSelectedText();
-        emit stateChanged(mId, false, text);
         std::int32_t pos = 0;
+        mLetter = '_';
         for (const auto letter : text) {
             if (!letter.isSpace()) {
                 if (pos == mLetterPosition) {
-                    letterLabel->setText(letter.toUpper());
-                    return;
+                    mLetter = letter.toUpper();
+                    letterLabel->setText(mLetter);
+                    break;
                 }
                 pos += 1;
             }
         }
+        emit stateChanged(mId, false, text);
     };
     connect(mListView.selectionModel(), &QItemSelectionModel::selectionChanged, this, updateLetterLabel);
     rowLayout->addWidget(letterLabel);
@@ -45,12 +50,16 @@ LetterSelector::LetterSelector(int32_t selectorId, QAbstractItemModel* strings, 
     connect(mPinButton, &QToolButton::toggled, &mListView, &QWidget::setDisabled);
     auto emitSelection = [this](bool checked) {
         const auto text = getSelectedText();
-        if (!text.isEmpty()) {
-            emit stateChanged(mId, checked, text);
-        }
+        emit stateChanged(mId, checked, text);
     };
     connect(mPinButton, &QToolButton::toggled, &mListView, emitSelection);
     rowLayout->addWidget(mPinButton);
+
+    auto* clearButton = new QToolButton(this);
+    clearButton->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
+    connect(clearButton, &QToolButton::clicked, &mListView, &QAbstractItemView::clearSelection);
+    connect(mPinButton, &QToolButton::toggled, clearButton, &QWidget::setDisabled);
+    rowLayout->addWidget(clearButton);
 
     mainLayout->addLayout(rowLayout);
 }
@@ -83,10 +92,16 @@ void LetterSelector::setState(bool pin, const QString& text)
         const auto textData = mFilterModel.data(idx).toString();
         if (textData == text) {
             mListView.selectionModel()->select(idx, QItemSelectionModel::Select);
+            mListView.scrollTo(idx);
             mPinButton->setChecked(pin);
             break;
         }
     }
+}
+
+QChar LetterSelector::getLetter()
+{
+    return mLetter;
 }
 
 // private

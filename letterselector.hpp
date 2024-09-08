@@ -16,6 +16,7 @@ public:
     ~LetterSelector();
     void updateFilter(bool enable, const QString& text);
     void setState(bool pin, const QString& text);
+    QChar getLetter();
 
 signals:
     void stateChanged(std::int32_t selectorId, bool isPinned, const QString& text);
@@ -29,4 +30,5 @@ private:
     const std::int32_t mLetterPosition;
     QStringList mFilteredStrings;
     QToolButton* mPinButton;
+    QChar mLetter {'_'};
 };
