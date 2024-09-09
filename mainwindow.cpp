@@ -15,6 +15,36 @@
 #include <array>
 #include <cstdint>
 
+#ifdef _WIN32
+constexpr std::string_view ahorn_1 =        "Der Ahorn";
+constexpr std::string_view hoffenster_2 =   "Hoffenster";
+constexpr std::string_view englkorb_3 =     "Englischer Korb";
+constexpr std::string_view rgbfalter_4 =    "Regenbogenfalter";
+constexpr std::string_view straute_5 =      "Sternenraute";
+constexpr std::string_view obstbaum_6 =     "Obstbaum";
+constexpr std::string_view wspule_7 =       "Weberspule";
+constexpr std::string_view lmitte_8 =       "Lebensmitte";
+constexpr std::string_view fstern_9 =       "Frühlingsstern";
+constexpr std::string_view plus_10 =        "Plusfläche";
+constexpr std::string_view bltri_11 =       "Blaue Triangel";
+constexpr std::string_view okreuz_12 =      "Ornamentenkreuz";
+constexpr std::string_view rwind_13 =       "Rad im Wind";
+constexpr std::string_view grot_14 =        "Gerade in Rot";
+constexpr std::string_view igelh_15 =       "Igels Haus";
+constexpr std::string_view hegelg_16 =      "Hegels Gesetz";
+constexpr std::string_view estern_17 =      "Stern von Eliza";
+constexpr std::string_view pinie_18 =       "Die Pinie";
+constexpr std::string_view ksonne_19 =      "Im Kreis der Sonne";
+constexpr std::string_view sigo_20 =        "Silber & Gold";
+
+constexpr std::array<std::string_view, 20> stringArray
+{
+    ahorn_1,        hoffenster_2,       englkorb_3,     rgbfalter_4,        straute_5,
+    obstbaum_6,     wspule_7,           lmitte_8,       fstern_9,           plus_10,
+    bltri_11,       okreuz_12,          rwind_13,       grot_14,            igelh_15,
+    hegelg_16,      estern_17,          pinie_18,       ksonne_19,          sigo_20
+};
+#else
 constexpr std::wstring_view ahorn_1 =       L"Der Ahorn";
 constexpr std::wstring_view hoffenster_2 =  L"Hoffenster";
 constexpr std::wstring_view englkorb_3 =    L"Englischer Korb";
@@ -43,6 +73,7 @@ constexpr std::array<std::wstring_view, 20> stringArray
     bltri_11,       okreuz_12,          rwind_13,       grot_14,            igelh_15,
     hegelg_16,      estern_17,          pinie_18,       ksonne_19,          sigo_20
 };
+#endif
 
 constexpr auto selectorState = "SelectorState";
 namespace
@@ -59,8 +90,12 @@ QSettings getSettings()
 MainWindow::MainWindow()
 {
     QStringList stringList;
-    for (const auto wsview : stringArray) {
-        stringList.append(QString::fromStdWString(std::wstring(wsview)));
+    for (const auto str : stringArray) {
+#ifdef _WIN32
+        stringList.append(QString::fromStdString(std::string(str)));
+#else
+        stringList.append(QString::fromStdWString(std::wstring(str)));
+#endif
     }
     auto* strings = new QStringListModel(this);
     strings->setStringList(stringList);
