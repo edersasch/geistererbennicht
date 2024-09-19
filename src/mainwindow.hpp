@@ -1,8 +1,9 @@
 #include <QMainWindow>
 
-#include <vector>
-#include <QVariantMap>
 #include <QSettings>
+#include <QVariantMap>
+
+#include <vector>
 
 class LetterSelector;
 class QCloseEvent;
@@ -23,4 +24,5 @@ signals:
 private:
     std::vector<LetterSelector*> mLetterSelectors;
     QVariantMap mSelectorState;
+    QString mSolutionText {"_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _"};
 };

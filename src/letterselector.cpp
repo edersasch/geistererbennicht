@@ -1,9 +1,10 @@
 #include "letterselector.hpp"
 
-#include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QPainter>
 #include <QToolButton>
+#include <QVBoxLayout>
 
 LetterSelector::LetterSelector(int32_t selectorId, QAbstractItemModel* strings, std::int32_t letterPosition, QWidget* parent)
 : QWidget(parent)
@@ -46,6 +47,11 @@ LetterSelector::LetterSelector(int32_t selectorId, QAbstractItemModel* strings, 
     };
     connect(mListView.selectionModel(), &QItemSelectionModel::selectionChanged, this, handleSelectionChanged);
     rowLayout->addWidget(letterLabel);
+
+    auto* picButton = new QToolButton(this);
+    picButton->setCheckable(true);
+    picButton->setIcon(style()->standardIcon(QStyle::SP_DialogHelpButton));
+    rowLayout->addWidget(picButton);
 
     mPinButton->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
     mPinButton->setCheckable(true);
@@ -109,6 +115,20 @@ QChar LetterSelector::getLetter()
     return mLetter;
 }
 
+// protected
+
+void LetterSelector::resizeEvent(QResizeEvent* event)
+{
+    QWidget::resizeEvent(event);
+    setBackgroundPicture();
+}
+
+void LetterSelector::showEvent(QShowEvent* event)
+{
+    QWidget::showEvent(event);
+    setBackgroundPicture();
+}
+
 // private
 
 QModelIndex LetterSelector::getSelectedIndex()
@@ -129,4 +149,20 @@ QString LetterSelector::getSelectedText()
         text = mFilterModel.data(idx).toString();
     }
     return text;
+}
+
+void LetterSelector::setBackgroundPicture()
+{
+    auto img = QImage(":/placeholder.png");
+    QImage transparentImg(img.size(), QImage::Format_ARGB32);
+    transparentImg.fill(Qt::transparent);
+    QPainter painter(&transparentImg);
+    painter.setOpacity(0.3);
+    painter.drawImage(QRect(0, 0, img.width(), img.height()), img);
+    painter.end();
+    transparentImg = transparentImg.scaled(mListView.viewport()->width(), mListView.viewport()->height());
+    auto pic = QPixmap::fromImage(transparentImg);
+    auto palette = mListView.viewport()->palette();
+    palette.setBrush(QPalette::Base, QBrush(pic));
+    mListView.viewport()->setPalette(palette);
 }

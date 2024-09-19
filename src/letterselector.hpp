@@ -1,6 +1,6 @@
-#include <QWidget>
-#include <QSortFilterProxyModel>
 #include <QListView>
+#include <QSortFilterProxyModel>
+#include <QWidget>
 
 #include <cstdint>
 
@@ -21,9 +21,14 @@ public:
 signals:
     void stateChanged(std::int32_t selectorId, bool isPinned, const QString& text);
 
+protected:
+    void resizeEvent(QResizeEvent* event) override;
+    void showEvent(QShowEvent* event) override;
+
 private:
     QModelIndex getSelectedIndex();
     QString getSelectedText();
+    void setBackgroundPicture();
 
     const std::int32_t mId;
     QListView mListView;

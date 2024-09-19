@@ -1,19 +1,22 @@
 #include "mainwindow.hpp"
+
 #include "letterselector.hpp"
 
-#include <QWidget>
-#include <QVBoxLayout>
-#include <QStringList>
-#include <QStringListModel>
-#include <QStandardPaths>
 #include <QCloseEvent>
 #include <QLabel>
+#include <QStandardPaths>
+#include <QStringList>
+#include <QStringListModel>
 #include <QTimer>
+#include <QToolBar>
+#include <QToolButton>
+#include <QVBoxLayout>
+#include <QWidget>
 
-#include <string>
-#include <string_view>
 #include <array>
 #include <cstdint>
+#include <string>
+#include <string_view>
 
 #ifdef _WIN32
 constexpr std::string_view ahorn_1 =        "Der Ahorn";
@@ -88,6 +91,7 @@ QSettings getSettings()
 }
 
 MainWindow::MainWindow()
+: QMainWindow()
 {
     QStringList stringList;
     for (const auto str : stringArray) {
@@ -103,16 +107,18 @@ MainWindow::MainWindow()
     auto* mainWidget = new QWidget(this);
     auto* mainLayout = new QVBoxLayout(mainWidget);
 
-    auto* solution = new QLabel("_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _", this);
+    auto updateWindowTitle = [this] {
+        setWindowTitle("Geister erben nicht: " + mSolutionText);
+    };
+    updateWindowTitle();
 
-    auto stateChanged = [this, solution] (std::int32_t selectorId, bool isPinned, const QString& text) {
+    auto stateChanged = [this, updateWindowTitle] (std::int32_t selectorId, bool isPinned, const QString& text) {
         const auto sel = QString::number(selectorId);
         const auto pin = isPinned ? QString("true") : QString("false");
         mSelectorState[sel] = QStringList{pin, text};
         const auto letter = mLetterSelectors[selectorId]->getLetter();
-        auto solutionText = solution->text();
-        solutionText[selectorId * 2] = letter;
-        solution->setText(solutionText);
+        mSolutionText[selectorId * 2] = letter;
+        updateWindowTitle();
         emit updateFilter(!isPinned, text);
     };
 
@@ -139,7 +145,13 @@ MainWindow::MainWindow()
     //              ?                   ?                   ?                   ?                   Regenbogenfalter!!!
     addSelectorRow({3,                  4,                  5,                  6,                  0});
 
-    mainLayout->addWidget(solution);
+    auto* toolBar = addToolBar("main");
+    toolBar->setMovable(false);
+
+    auto* picButton = new QToolButton(this);
+    picButton->setCheckable(true);
+    picButton->setIcon(style()->standardIcon(QStyle::SP_DialogHelpButton));
+    toolBar->addWidget(picButton);
 
     setCentralWidget(mainWidget);
 
@@ -147,7 +159,7 @@ MainWindow::MainWindow()
     mSelectorState = settings.value(selectorState).toMap();
     auto itr = mSelectorState.begin();
     while (itr != mSelectorState.end()) {
-        auto selectorId = itr.key().toInt();
+        selectorId = itr.key().toInt();
         if (selectorId >= 0 && selectorId < 4 * entriesPerRow) {
             const auto state = itr.value().toStringList();
             if (state.size() == 2) {
