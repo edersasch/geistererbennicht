@@ -28,22 +28,24 @@ LetterSelector::LetterSelector(int32_t selectorId, QAbstractItemModel* strings, 
 
     auto* letterLabel = new QLabel(this);
     auto handleSelectionChanged = [this, letterLabel] {
-        const auto text = getSelectedText();
-        std::int32_t pos = 0;
-        mLetter = '_';
-        letterLabel->setText(QString());
-        for (const auto letter : text) {
-            if (!letter.isSpace()) {
-                if (pos == mLetterPosition) {
-                    mLetter = letter.toUpper();
-                    letterLabel->setText(mLetter);
-                    break;
+        if (mListView.isEnabled()) {
+            const auto text = getSelectedText();
+            std::int32_t pos = 0;
+            mLetter = '_';
+            letterLabel->setText(QString());
+            for (const auto letter : text) {
+                if (!letter.isSpace()) {
+                    if (pos == mLetterPosition) {
+                        mLetter = letter.toUpper();
+                        letterLabel->setText(mLetter);
+                        break;
+                    }
+                    pos += 1;
                 }
-                pos += 1;
             }
+            mPinButton->setDisabled(text.isEmpty());
+            emit stateChanged(mId, false, text);
         }
-        mPinButton->setDisabled(text.isEmpty());
-        emit stateChanged(mId, false, text);
     };
     connect(mListView.selectionModel(), &QItemSelectionModel::selectionChanged, this, handleSelectionChanged);
     rowLayout->addWidget(letterLabel);
@@ -82,8 +84,14 @@ void LetterSelector::updateFilter(bool enable, const QString& text)
         return;
     }
     if (enable) {
-        mFilteredStrings.removeAll(text);
+        auto removed = mFilteredStrings.removeAll(text);
+        if (removed == 0) {
+            return;
+        }
     } else {
+        if (mFilteredStrings.contains(text)) {
+            return;
+        }
         mFilteredStrings.append(text);
     }
     QString filter;

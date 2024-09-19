@@ -165,7 +165,7 @@ MainWindow::MainWindow()
             if (state.size() == 2) {
                 auto setState = [this, state, selectorId] {
                     const bool pinned = state[0] == "true";
-                    const auto &text = state[1];
+                    const auto& text = state[1];
                     mLetterSelectors[static_cast<std::size_t>(selectorId)]->setState(pinned, text);
                 };
                 QTimer::singleShot(0, this, setState);
