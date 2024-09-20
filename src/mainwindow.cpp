@@ -130,6 +130,7 @@ MainWindow::MainWindow(QWidget* parent)
         auto* row = new QHBoxLayout;
         for (auto pos : positions) {
             auto* letterSel = new LetterSelector(selectorId, strings, pos, this);
+            letterSel->setPicture(":/placeholder.png");
             row->addWidget(letterSel);
             connect(letterSel, &LetterSelector::stateChanged, letterSel, stateChanged);
             connect(this, &MainWindow::updateFilter, letterSel, &LetterSelector::updateFilter);

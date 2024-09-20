@@ -6,6 +6,38 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 
+namespace
+{
+
+QIcon& getShowPicIcon(QStyle* style)
+{
+    static QIcon showPicIcon;
+    if (showPicIcon.isNull() && style != nullptr) {
+        showPicIcon = style->standardIcon(QStyle::SP_DialogHelpButton);
+    }
+    return showPicIcon;
+}
+
+QIcon& getPinIcon(QStyle* style)
+{
+    static QIcon pinIcon;
+    if (pinIcon.isNull() && style != nullptr) {
+        pinIcon = style->standardIcon(QStyle::SP_MediaPause);
+    }
+    return pinIcon;
+}
+
+QIcon& getClearIcon(QStyle* style)
+{
+    static QIcon clearIcon;
+    if (clearIcon.isNull() && style != nullptr) {
+        clearIcon = style->standardIcon(QStyle::SP_MediaStop);
+    }
+    return clearIcon;
+}
+
+}
+
 LetterSelector::LetterSelector(int32_t selectorId, QAbstractItemModel* strings, std::int32_t letterPosition, QWidget* parent)
 : QWidget(parent)
 , mId(selectorId)
@@ -52,10 +84,12 @@ LetterSelector::LetterSelector(int32_t selectorId, QAbstractItemModel* strings, 
 
     auto* picButton = new QToolButton(this);
     picButton->setCheckable(true);
-    picButton->setIcon(style()->standardIcon(QStyle::SP_DialogHelpButton));
+    const auto& picIcon = getShowPicIcon(style());
+    picButton->setIcon(picIcon);
     rowLayout->addWidget(picButton);
 
-    mPinButton->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+    const auto& pinIcon = getPinIcon(style());
+    mPinButton->setIcon(pinIcon);
     mPinButton->setCheckable(true);
     connect(mPinButton, &QToolButton::toggled, &mListView, &QWidget::setDisabled);
     auto emitSelection = [this](bool checked) {
@@ -67,7 +101,8 @@ LetterSelector::LetterSelector(int32_t selectorId, QAbstractItemModel* strings, 
     rowLayout->addWidget(mPinButton);
 
     auto* clearButton = new QToolButton(this);
-    clearButton->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
+    const auto& clearIcon = getClearIcon(style());
+    clearButton->setIcon(clearIcon);
     connect(clearButton, &QToolButton::clicked, &mListView, &QAbstractItemView::clearSelection);
     connect(mPinButton, &QToolButton::toggled, clearButton, &QWidget::setDisabled);
     rowLayout->addWidget(clearButton);
@@ -123,6 +158,11 @@ QChar LetterSelector::getLetter()
     return mLetter;
 }
 
+void LetterSelector::setPicture(const QString& path)
+{
+    mPicture.load(path);
+}
+
 // protected
 
 void LetterSelector::resizeEvent(QResizeEvent* event)
@@ -161,17 +201,15 @@ QString LetterSelector::getSelectedText()
 
 void LetterSelector::setBackgroundPicture()
 {
-    auto img = QImage(":/placeholder.png");
-    QImage transparentImg(img.size(), QImage::Format_ARGB32);
+    QImage transparentImg(mPicture.size(), QImage::Format_ARGB32);
     transparentImg.fill(Qt::transparent);
     QPainter painter(&transparentImg);
     static constexpr auto opacity = 0.3;
     painter.setOpacity(opacity);
-    painter.drawImage(QRect(0, 0, img.width(), img.height()), img);
+    painter.drawImage(QRect(0, 0, mPicture.width(), mPicture.height()), mPicture);
     painter.end();
     transparentImg = transparentImg.scaled(mListView.viewport()->width(), mListView.viewport()->height());
-    auto pic = QPixmap::fromImage(transparentImg);
     auto palette = mListView.viewport()->palette();
-    palette.setBrush(QPalette::Base, QBrush(pic));
+    palette.setBrush(QPalette::Base, QBrush(transparentImg));
     mListView.viewport()->setPalette(palette);
 }
