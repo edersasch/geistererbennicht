@@ -165,7 +165,8 @@ void LetterSelector::setBackgroundPicture()
     QImage transparentImg(img.size(), QImage::Format_ARGB32);
     transparentImg.fill(Qt::transparent);
     QPainter painter(&transparentImg);
-    painter.setOpacity(0.3);
+    static constexpr auto opacity = 0.3;
+    painter.setOpacity(opacity);
     painter.drawImage(QRect(0, 0, img.width(), img.height()), img);
     painter.end();
     transparentImg = transparentImg.scaled(mListView.viewport()->width(), mListView.viewport()->height());

@@ -13,7 +13,7 @@ class LetterSelector
 
 public:
     LetterSelector(std::int32_t selectorId, QAbstractItemModel* strings, std::int32_t letterPosition, QWidget* parent = nullptr);
-    ~LetterSelector();
+    ~LetterSelector() override;
     void updateFilter(bool enable, const QString& text);
     void setState(bool pin, const QString& text);
     QChar getLetter();
@@ -31,9 +31,9 @@ private:
     void setBackgroundPicture();
 
     const std::int32_t mId;
+    const std::int32_t mLetterPosition;
     QListView mListView;
     QSortFilterProxyModel mFilterModel {};
-    const std::int32_t mLetterPosition;
     QStringList mFilteredStrings;
     QToolButton* mPinButton;
     QChar mLetter {'_'};

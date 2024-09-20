@@ -85,15 +85,16 @@ namespace
 QSettings getSettings()
 {
     const auto settingsLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    return QSettings(settingsLocation, QSettings::IniFormat);
+    return {settingsLocation, QSettings::IniFormat};
 }
 
 }
 
-MainWindow::MainWindow()
-: QMainWindow()
+MainWindow::MainWindow(QWidget* parent)
+: QMainWindow(parent)
 {
     QStringList stringList;
+    stringList.reserve(stringArray.size());
     for (const auto str : stringArray) {
 #ifdef _WIN32
         stringList.append(QString::fromStdString(std::string(str)));
@@ -116,14 +117,15 @@ MainWindow::MainWindow()
         const auto sel = QString::number(selectorId);
         const auto pin = isPinned ? QString("true") : QString("false");
         mSelectorState[sel] = QStringList{pin, text};
-        const auto letter = mLetterSelectors[selectorId]->getLetter();
-        mSolutionText[selectorId * 2] = letter;
+        const auto letter = mLetterSelectors[static_cast<std::size_t>(selectorId)]->getLetter();
+        mSolutionText[static_cast<std::int64_t>(selectorId * 2)] = letter;
         updateWindowTitle();
         emit updateFilter(!isPinned, text);
     };
 
     static constexpr auto entriesPerRow = 5;
     std::int32_t selectorId = 0;
+    mLetterSelectors.reserve(stringArray.size());
     auto addSelectorRow = [this, mainLayout, strings, stateChanged, &selectorId] (std::array<std::int32_t, entriesPerRow> positions) {
         auto* row = new QHBoxLayout;
         for (auto pos : positions) {
@@ -136,6 +138,8 @@ MainWindow::MainWindow()
         }
         mainLayout->addLayout(row);
     };
+    static constexpr auto letter5 = 5;
+    static constexpr auto letter6 = 6;
     //              Ornamentenkreuz!    Obstbaum!           Die Pinie!          Rad im Wind!!!      Der Ahorn!
     addSelectorRow({0,                  1,                  2,                  0,                  1});
     //              ?                   ?                   ?                   ?                   Englischer Korb!!!
@@ -143,7 +147,7 @@ MainWindow::MainWindow()
     //              ?                   ?                   ?                   ?                   ?
     addSelectorRow({3,                  4,                  0,                  1,                  2});
     //              ?                   ?                   ?                   ?                   Regenbogenfalter!!!
-    addSelectorRow({3,                  4,                  5,                  6,                  0});
+    addSelectorRow({3,                  4,                  letter5,            letter6,            0});
 
     auto* toolBar = addToolBar("main");
     toolBar->setMovable(false);
@@ -157,8 +161,8 @@ MainWindow::MainWindow()
 
     const auto settings = getSettings();
     mSelectorState = settings.value(selectorState).toMap();
-    auto itr = mSelectorState.begin();
-    while (itr != mSelectorState.end()) {
+    auto itr = mSelectorState.cbegin();
+    while (itr != mSelectorState.cend()) {
         selectorId = itr.key().toInt();
         if (selectorId >= 0 && selectorId < 4 * entriesPerRow) {
             const auto state = itr.value().toStringList();
