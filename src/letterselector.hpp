@@ -1,3 +1,6 @@
+#ifndef SRC_LETTERSELECTOR_HPP
+#define SRC_LETTERSELECTOR_HPP
+
 #include <QListView>
 #include <QSortFilterProxyModel>
 #include <QWidget>
@@ -40,3 +43,5 @@ private:
     QChar mLetter {'_'};
     QImage mPicture;
 };
+
+#endif // SRC_LETTERSELECTOR_HPP

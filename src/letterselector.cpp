@@ -48,6 +48,7 @@ LetterSelector::LetterSelector(int32_t selectorId, QAbstractItemModel* strings, 
 
     auto* mainLayout = new QVBoxLayout(this);
 
+    mListView.setObjectName("ListView");
     mListView.setEditTriggers(QAbstractItemView::NoEditTriggers);
     mListView.setSelectionMode(QAbstractItemView::SingleSelection);
     mListView.setModel(&mFilterModel);
@@ -145,7 +146,7 @@ void LetterSelector::setState(bool pin, const QString& text)
         const auto idx = mFilterModel.index(i, 0);
         const auto textData = mFilterModel.data(idx).toString();
         if (textData == text) {
-            mListView.selectionModel()->select(idx, QItemSelectionModel::Select);
+            mListView.selectionModel()->select(idx, QItemSelectionModel::SelectCurrent);
             mListView.scrollTo(idx);
             mPinButton->setChecked(pin);
             break;

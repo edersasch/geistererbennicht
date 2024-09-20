@@ -1,3 +1,6 @@
+#ifndef SRC_MAINWINDOW_HPP
+#define SRC_MAINWINDOW_HPP
+
 #include <QMainWindow>
 
 #include <QSettings>
@@ -26,3 +29,5 @@ private:
     QVariantMap mSelectorState;
     QString mSolutionText {"_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _"};
 };
+
+#endif // SRC_MAINWINDOW_HPP

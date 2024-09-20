@@ -1,13 +1,7 @@
 project(geistererbennicht)
 
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} SRC_LIST)
+include(prjstandardpre)
 list(APPEND SRC_LIST "${CMAKE_SOURCE_DIR}/data/pics.qrc")
-
-if(WIN32)
-    include(DeployQt)
-    windeployqt(${PROJECT_NAME})
-    set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE true)
-endif()
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(${PROJECT_NAME}
@@ -32,21 +26,7 @@ else()
     endif()
 endif()
 
-set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    set(PRIVATEOPTS -Wall -Wextra -Werror -Wshadow)
-    if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
-        set(PRIVATELINKOPTS LINKER:-s)
-    endif()
-    #if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-    #    set(PRIVATEOPTS ${PRIVATEOPTS} -fsanitize=address)
-    #    set(PRIVATELINKOPTS ${PRIVATELINKOPTS} -fsanitize=address)
-    #endif()
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-    set(PRIVATEOPTS /W3)
-endif()
-target_compile_options(${PROJECT_NAME} PRIVATE ${PRIVATEOPTS})
-target_link_options(${PROJECT_NAME} PRIVATE ${PRIVATELINKOPTS})
+include(prjstandardpost)
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
@@ -75,4 +55,10 @@ install(TARGETS ${PROJECT_NAME}
 
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(${PROJECT_NAME})
+endif()
+
+if(WIN32)
+    include(DeployQt)
+    windeployqt(${PROJECT_NAME})
+    set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE true)
 endif()
