@@ -78,6 +78,14 @@ constexpr std::array<std::wstring_view, 20> stringArray
 };
 #endif
 
+constexpr std::array<std::string_view, 20> picArray
+{
+    ":/r1c1", ":/r1c2", ":/r1c3", ":/r1c4", ":/r1c5",
+    ":/r2c1", ":/r2c2", ":/r2c3", ":/r2c4", ":/r2c5",
+    ":/r3c1", ":/r3c2", ":/r3c3", ":/r3c4", ":/r3c5",
+    ":/r4c1", ":/r4c2", ":/r4c3", ":/r4c4", ":/r4c5",
+};
+
 constexpr auto selectorState = "SelectorState";
 namespace
 {
@@ -93,6 +101,7 @@ QSettings getSettings()
 MainWindow::MainWindow(QWidget* parent)
 : QMainWindow(parent)
 {
+    static_assert(stringArray.size() == picArray.size());
     QStringList stringList;
     stringList.reserve(stringArray.size());
     for (const auto str : stringArray) {
@@ -130,7 +139,7 @@ MainWindow::MainWindow(QWidget* parent)
         auto* row = new QHBoxLayout;
         for (auto pos : positions) {
             auto* letterSel = new LetterSelector(selectorId, strings, pos, this);
-            letterSel->setPicture(":/placeholder.png");
+            letterSel->setPicture(picArray.at(static_cast<std::size_t>(selectorId)).data());
             row->addWidget(letterSel);
             connect(letterSel, &LetterSelector::stateChanged, letterSel, stateChanged);
             connect(this, &MainWindow::updateFilter, letterSel, &LetterSelector::updateFilter);
@@ -154,8 +163,17 @@ MainWindow::MainWindow(QWidget* parent)
     toolBar->setMovable(false);
 
     auto* picButton = new QToolButton(this);
-    picButton->setCheckable(true);
     picButton->setIcon(style()->standardIcon(QStyle::SP_DialogHelpButton));
+    connect(picButton, &QToolButton::clicked, this, [this] {
+        if (mPicView == nullptr) {
+            mPicView = new QWidget;
+            auto* picLabel = new QLabel(mPicView);
+            picLabel->setPixmap(QPixmap(":/complete.jpg"));
+            auto* picLayout = new QHBoxLayout(mPicView);
+            picLayout->addWidget(picLabel);
+        }
+        mPicView->show();
+    });
     toolBar->addWidget(picButton);
 
     setCentralWidget(mainWidget);

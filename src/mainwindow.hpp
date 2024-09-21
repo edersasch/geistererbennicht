@@ -28,6 +28,7 @@ private:
     std::vector<LetterSelector*> mLetterSelectors;
     QVariantMap mSelectorState;
     QString mSolutionText {"_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _"};
+    QWidget* mPicView = nullptr;
 };
 
 #endif // SRC_MAINWINDOW_HPP

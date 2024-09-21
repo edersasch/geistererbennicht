@@ -32,7 +32,7 @@ protected:
 private:
     QModelIndex getSelectedIndex();
     QString getSelectedText();
-    void setBackgroundPicture();
+    void setBackgroundPicture(bool transpararent);
 
     const std::int32_t mId;
     const std::int32_t mLetterPosition;

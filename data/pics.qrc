@@ -1,5 +1,25 @@
 <RCC>
     <qresource prefix="/">
-        <file>placeholder.png</file>
+        <file>complete.jpg</file>
+        <file>r1c1.jpg</file>
+        <file>r1c2.jpg</file>
+        <file>r1c3.jpg</file>
+        <file>r1c4.jpg</file>
+        <file>r1c5.jpg</file>
+        <file>r2c1.jpg</file>
+        <file>r2c2.jpg</file>
+        <file>r2c3.jpg</file>
+        <file>r2c4.jpg</file>
+        <file>r2c5.jpg</file>
+        <file>r3c1.jpg</file>
+        <file>r3c2.jpg</file>
+        <file>r3c3.jpg</file>
+        <file>r3c4.jpg</file>
+        <file>r3c5.jpg</file>
+        <file>r4c1.jpg</file>
+        <file>r4c2.jpg</file>
+        <file>r4c3.jpg</file>
+        <file>r4c4.jpg</file>
+        <file>r4c5.jpg</file>
     </qresource>
 </RCC>

@@ -84,10 +84,15 @@ LetterSelector::LetterSelector(int32_t selectorId, QAbstractItemModel* strings, 
     rowLayout->addWidget(letterLabel);
 
     auto* picButton = new QToolButton(this);
-    picButton->setCheckable(true);
     const auto& picIcon = getShowPicIcon(style());
     picButton->setIcon(picIcon);
     rowLayout->addWidget(picButton);
+    connect(picButton, &QToolButton::pressed, this, [this] {
+        setBackgroundPicture(false);
+    });
+    connect(picButton, &QToolButton::released, this, [this] {
+        setBackgroundPicture(true);
+    });
 
     const auto& pinIcon = getPinIcon(style());
     mPinButton->setIcon(pinIcon);
@@ -169,13 +174,13 @@ void LetterSelector::setPicture(const QString& path)
 void LetterSelector::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
-    setBackgroundPicture();
+    setBackgroundPicture(true);
 }
 
 void LetterSelector::showEvent(QShowEvent* event)
 {
     QWidget::showEvent(event);
-    setBackgroundPicture();
+    setBackgroundPicture(true);
 }
 
 // private
@@ -200,17 +205,22 @@ QString LetterSelector::getSelectedText()
     return text;
 }
 
-void LetterSelector::setBackgroundPicture()
+void LetterSelector::setBackgroundPicture(bool transparent)
 {
-    QImage transparentImg(mPicture.size(), QImage::Format_ARGB32);
-    transparentImg.fill(Qt::transparent);
-    QPainter painter(&transparentImg);
-    static constexpr auto opacity = 0.3;
-    painter.setOpacity(opacity);
-    painter.drawImage(QRect(0, 0, mPicture.width(), mPicture.height()), mPicture);
-    painter.end();
-    transparentImg = transparentImg.scaled(mListView.viewport()->width(), mListView.viewport()->height());
     auto palette = mListView.viewport()->palette();
-    palette.setBrush(QPalette::Base, QBrush(transparentImg));
+    if (transparent) {
+        QImage transparentImg(mPicture.size(), QImage::Format_ARGB32);
+        transparentImg.fill(Qt::transparent);
+        QPainter painter(&transparentImg);
+        static constexpr auto opacity = 0.3;
+        painter.setOpacity(opacity);
+        painter.drawImage(QRect(0, 0, mPicture.width(), mPicture.height()), mPicture);
+        painter.end();
+        transparentImg = transparentImg.scaled(mListView.viewport()->width(), mListView.viewport()->height());
+        palette.setBrush(QPalette::Base, QBrush(transparentImg));
+    } else {
+        const auto scaledImg = mPicture.scaled(mListView.viewport()->width(), mListView.viewport()->height());
+        palette.setBrush(QPalette::Base, QBrush(scaledImg));
+    }
     mListView.viewport()->setPalette(palette);
 }
