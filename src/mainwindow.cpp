@@ -127,7 +127,7 @@ MainWindow::MainWindow(QWidget* parent)
         const auto pin = isPinned ? QString("true") : QString("false");
         mSelectorState[sel] = QStringList{pin, text};
         const auto letter = mLetterSelectors[static_cast<std::size_t>(selectorId)]->getLetter();
-        mSolutionText[static_cast<std::int64_t>(selectorId * 2)] = letter;
+        mSolutionText[selectorId * 2] = letter;
         updateWindowTitle();
         emit updateFilter(!isPinned, text);
     };

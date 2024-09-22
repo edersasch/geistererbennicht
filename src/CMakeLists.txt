@@ -61,4 +61,11 @@ if(WIN32)
     include(DeployQt)
     windeployqt(${PROJECT_NAME})
     set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE true)
+    set(RUNWINDEPLOYQT "execute_process(COMMAND ${WINDEPLOYQT_EXECUTABLE}
+                --verbose 0
+                --no-compiler-runtime
+                --no-angle
+                --no-opengl-sw
+                ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/${PROJECT_NAME}.exe)")
+    install(CODE ${RUNWINDEPLOYQT})
 endif()
