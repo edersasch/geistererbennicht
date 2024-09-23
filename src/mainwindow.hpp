@@ -6,10 +6,25 @@
 #include <QSettings>
 #include <QVariantMap>
 
+#include <memory>
 #include <vector>
 
 class LetterSelector;
 class QCloseEvent;
+class QLabel;
+
+class PicView
+: public QWidget
+{
+public:
+    PicView(QWidget* parent = nullptr);
+    ~PicView() override;
+
+protected:
+    void resizeEvent(QResizeEvent* event) override;
+    QPixmap mPic;
+    QLabel* mPicLabel;
+};
 
 class MainWindow
 : public QMainWindow
@@ -28,7 +43,7 @@ private:
     std::vector<LetterSelector*> mLetterSelectors;
     QVariantMap mSelectorState;
     QString mSolutionText {"_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _"};
-    QWidget* mPicView = nullptr;
+    std::unique_ptr<PicView> mPicView = nullptr;
 };
 
 #endif // SRC_MAINWINDOW_HPP

@@ -13,7 +13,7 @@ QIcon& getShowPicIcon(QStyle* style)
 {
     static QIcon showPicIcon;
     if (showPicIcon.isNull() && style != nullptr) {
-        showPicIcon = style->standardIcon(QStyle::SP_DialogHelpButton);
+        showPicIcon = style->standardIcon(QStyle::SP_FileDialogContentsView);
     }
     return showPicIcon;
 }

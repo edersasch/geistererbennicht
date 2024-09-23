@@ -15,6 +15,7 @@
 
 #include <array>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <string_view>
 
@@ -87,6 +88,8 @@ constexpr std::array<std::string_view, 20> picArray
 };
 
 constexpr auto selectorState = "SelectorState";
+constexpr auto picviewSize = "PicviewSize";
+
 namespace
 {
 
@@ -96,6 +99,29 @@ QSettings getSettings()
     return {settingsLocation, QSettings::IniFormat};
 }
 
+}
+
+PicView::PicView(QWidget* parent)
+: QWidget(parent)
+, mPic(":/complete.jpg")
+, mPicLabel(new QLabel(this))
+{
+    mPicLabel->setPixmap(mPic);
+    static constexpr std::int32_t minWidth = 50;
+    static constexpr std::int32_t minHeight = 50;
+    mPicLabel->setMinimumWidth(minWidth);
+    mPicLabel->setMinimumHeight(minHeight);
+    auto* picLayout = new QVBoxLayout(this);
+    picLayout->addWidget(mPicLabel);
+}
+
+PicView::~PicView() = default;
+
+void PicView::resizeEvent(QResizeEvent* event)
+{
+    const auto scaledPic = mPic.scaledToWidth(mPicLabel->width());
+    mPicLabel->setPixmap(scaledPic);
+    QWidget::resizeEvent(event);
 }
 
 MainWindow::MainWindow(QWidget* parent)
@@ -163,14 +189,15 @@ MainWindow::MainWindow(QWidget* parent)
     toolBar->setMovable(false);
 
     auto* picButton = new QToolButton(this);
-    picButton->setIcon(style()->standardIcon(QStyle::SP_DialogHelpButton));
+    picButton->setIcon(style()->standardIcon(QStyle::SP_FileDialogContentsView));
     connect(picButton, &QToolButton::clicked, this, [this] {
         if (mPicView == nullptr) {
-            mPicView = new QWidget;
-            auto* picLabel = new QLabel(mPicView);
-            picLabel->setPixmap(QPixmap(":/complete.jpg"));
-            auto* picLayout = new QHBoxLayout(mPicView);
-            picLayout->addWidget(picLabel);
+            mPicView = std::make_unique<PicView>();
+            static constexpr int32_t initialWidth = 640;
+            static constexpr int32_t initialHeight = 480;
+            const auto settings = getSettings();
+            const auto initialSize = settings.value(picviewSize, QVariant(QSize(initialWidth, initialHeight))).toSize();
+            mPicView->resize(initialSize);
         }
         mPicView->show();
     });
@@ -204,5 +231,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     auto settings = getSettings();
     settings.setValue(selectorState, mSelectorState);
+    if (mPicView != nullptr) {
+        settings.setValue(picviewSize, mPicView->size());
+    }
     event->accept();
 }
