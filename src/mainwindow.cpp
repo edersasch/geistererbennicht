@@ -87,8 +87,9 @@ constexpr std::array<std::string_view, 20> picArray
     ":/r4c1", ":/r4c2", ":/r4c3", ":/r4c4", ":/r4c5",
 };
 
-constexpr auto selectorState = "SelectorState";
-constexpr auto picviewSize = "PicviewSize";
+constexpr auto selectorState    = "SelectorState";
+constexpr auto picviewGeometry  = "PicviewGeometry";
+constexpr auto mainGeometry     = "MainGeometry";
 
 namespace
 {
@@ -196,8 +197,11 @@ MainWindow::MainWindow(QWidget* parent)
             static constexpr int32_t initialWidth = 640;
             static constexpr int32_t initialHeight = 480;
             const auto settings = getSettings();
-            const auto initialSize = settings.value(picviewSize, QVariant(QSize(initialWidth, initialHeight))).toSize();
-            mPicView->resize(initialSize);
+            const auto picGeometry = settings.value(picviewGeometry).toByteArray();
+            auto restored = mPicView->restoreGeometry(picGeometry);
+            if (!restored) {
+                mPicView->resize({initialWidth, initialHeight});
+            }
         }
         mPicView->show();
     });
@@ -206,6 +210,8 @@ MainWindow::MainWindow(QWidget* parent)
     setCentralWidget(mainWidget);
 
     const auto settings = getSettings();
+    const auto geometry = settings.value(mainGeometry).toByteArray();
+    restoreGeometry(geometry);
     mSelectorState = settings.value(selectorState).toMap();
     auto itr = mSelectorState.cbegin();
     while (itr != mSelectorState.cend()) {
@@ -230,9 +236,12 @@ MainWindow::~MainWindow() = default;
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     auto settings = getSettings();
+    const auto geometry = saveGeometry();
+    settings.setValue(mainGeometry, geometry);
     settings.setValue(selectorState, mSelectorState);
     if (mPicView != nullptr) {
-        settings.setValue(picviewSize, mPicView->size());
+        const auto picGeometry = mPicView->saveGeometry();
+        settings.setValue(picviewGeometry, picGeometry);
     }
     event->accept();
 }
