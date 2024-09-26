@@ -1,9 +1,14 @@
 #include "mainwindow.hpp"
 
 #include "letterselector.hpp"
+#include "version.hpp"
 
+#include <QApplication>
 #include <QCloseEvent>
+#include <QDesktopServices>
+#include <QFile>
 #include <QLabel>
+#include <QMessageBox>
 #include <QStandardPaths>
 #include <QStringList>
 #include <QStringListModel>
@@ -15,6 +20,7 @@
 
 #include <array>
 #include <cstdint>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -206,6 +212,38 @@ MainWindow::MainWindow(QWidget* parent)
         mPicView->show();
     });
     toolBar->addWidget(picButton);
+
+    auto* helpButton = new QToolButton(this);
+    helpButton->setIcon(style()->standardIcon(QStyle::SP_DialogHelpButton));
+    connect(helpButton, &QToolButton::clicked, this, [this] {
+        auto getReleaseInfo = [] {
+            QString ret = QString::number(geistererbennicht::major_version) + "." +
+                QString::number(geistererbennicht::minor_version) + "." +
+                QString::number(geistererbennicht::patch_version);
+            ret += " / " + QString::number(geistererbennicht::release_year) + "-" +
+                QString::number(geistererbennicht::release_month) + "-" +
+                QString::number(geistererbennicht::release_day);
+            return ret;
+        };
+        QString lang = "en";
+        switch (QLocale::system().language()) {
+        case QLocale::German:
+            lang = "de";
+            break;
+        default:
+            break;
+        }
+        auto docpath = qApp->applicationDirPath() + "/../share/doc/" +
+            geistererbennicht::project_name.data() + "/" +
+            geistererbennicht::project_name.data() + "_" +
+            lang + ".html";
+        if (!(QFile::permissions(docpath) & QFileDevice::ReadUser && QDesktopServices::openUrl(docpath))) {
+            QMessageBox::information(this, "Help", getReleaseInfo() + "\n\nNo help available", QMessageBox::Ok);
+            std::cerr << qPrintable(qApp->platformName()) << '\n' << qPrintable(qApp->applicationDirPath()) << '\n';
+            std::cerr << getReleaseInfo().toStdString() <<'\n';
+        }
+    });
+    toolBar->addWidget(helpButton);
 
     setCentralWidget(mainWidget);
 

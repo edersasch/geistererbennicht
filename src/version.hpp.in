@@ -1,0 +1,19 @@
+#ifndef SRC_VERSION_HPP
+#define SRC_VERSION_HPP
+
+#include <string_view>
+
+namespace geistererbennicht
+{
+
+constexpr int major_version                 {@PROJECT_VERSION_MAJOR@};
+constexpr int minor_version                 {@PROJECT_VERSION_MINOR@};
+constexpr int patch_version                 {@PROJECT_VERSION_PATCH@};
+constexpr int release_year                  {@PROJECT_RELEASE_YEAR@};
+constexpr int release_month                 {@PROJECT_RELEASE_MONTH@};
+constexpr int release_day                   {@PROJECT_RELEASE_DAY@};
+constexpr std::string_view project_name     {"@PROJECT_NAME@"};
+
+}
+
+#endif // SRC_VERSION_HPP
