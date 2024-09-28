@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(geistererbennicht VERSION 0.1.0 LANGUAGES CXX)
 set(PROJECT_RELEASE_YEAR    2024)
-set(PROJECT_RELEASE_MONTH   99)
-set(PROJECT_RELEASE_DAY     99)
+set(PROJECT_RELEASE_MONTH   9)
+set(PROJECT_RELEASE_DAY     28)
 
 option(GEISTERERBENNICHT_BUILD_TESTS                    "Build unit tests, downloads google test"                   ON)
 
