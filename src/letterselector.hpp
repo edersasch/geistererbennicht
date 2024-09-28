@@ -19,7 +19,7 @@ public:
     ~LetterSelector() override;
     void updateFilter(bool enable, const QString& text);
     void setState(bool pin, const QString& text);
-    QChar getLetter();
+    QChar getLetter() const;
     void setPicture(const QString& path);
 
 signals:

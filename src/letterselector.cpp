@@ -159,7 +159,7 @@ void LetterSelector::setState(bool pin, const QString& text)
     }
 }
 
-QChar LetterSelector::getLetter()
+QChar LetterSelector::getLetter() const 
 {
     return mLetter;
 }

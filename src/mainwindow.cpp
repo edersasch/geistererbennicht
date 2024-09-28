@@ -137,7 +137,7 @@ MainWindow::MainWindow(QWidget* parent)
     static_assert(stringArray.size() == picArray.size());
     QStringList stringList;
     stringList.reserve(stringArray.size());
-    for (const auto str : stringArray) {
+    for (const auto& str : stringArray) {
 #ifdef _WIN32
         stringList.append(QString::fromStdString(std::string(str)));
 #else
@@ -157,7 +157,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     auto stateChanged = [this, updateWindowTitle] (std::int32_t selectorId, bool isPinned, const QString& text) {
         const auto sel = QString::number(selectorId);
-        const auto pin = isPinned ? QString("true") : QString("false");
+        const auto& pin = isPinned ? QString("true") : QString("false");
         mSelectorState[sel] = QStringList{pin, text};
         const auto letter = mLetterSelectors[static_cast<std::size_t>(selectorId)]->getLetter();
         mSolutionText[selectorId * 2] = letter;
@@ -237,7 +237,7 @@ MainWindow::MainWindow(QWidget* parent)
             geistererbennicht::project_name.data() + "/" +
             geistererbennicht::project_name.data() + "_" +
             lang + ".html";
-        if (!(QFile::permissions(docpath) & QFileDevice::ReadUser && QDesktopServices::openUrl(docpath))) {
+        if ((QFile::permissions(docpath) & QFileDevice::ReadUser) == 0 || !QDesktopServices::openUrl(docpath)) {
             QMessageBox::information(this, "Help", getReleaseInfo() + "\n\nNo help available", QMessageBox::Ok);
             std::cerr << qPrintable(qApp->platformName()) << '\n' << qPrintable(qApp->applicationDirPath()) << '\n';
             std::cerr << getReleaseInfo().toStdString() <<'\n';
