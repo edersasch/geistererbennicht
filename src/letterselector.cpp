@@ -36,6 +36,15 @@ QIcon& getClearIcon(QStyle* style)
     return clearIcon;
 }
 
+QIcon& getSolveIcon(QStyle* style)
+{
+    static QIcon solveIcon;
+    if (solveIcon.isNull() && style != nullptr) {
+        solveIcon = style->standardIcon(QStyle::SP_MediaPlay);
+    }
+    return solveIcon;
+}
+
 }
 
 LetterSelector::LetterSelector(int32_t selectorId, QAbstractItemModel* strings, std::int32_t letterPosition, QWidget* parent)
@@ -43,6 +52,7 @@ LetterSelector::LetterSelector(int32_t selectorId, QAbstractItemModel* strings, 
 , mId(selectorId)
 , mLetterPosition(letterPosition)
 , mPinButton(new QToolButton(this))
+, mSolveButton(new QToolButton(this))
 {
     mFilterModel.setSourceModel(strings);
 
@@ -83,6 +93,8 @@ LetterSelector::LetterSelector(int32_t selectorId, QAbstractItemModel* strings, 
     connect(mListView.selectionModel(), &QItemSelectionModel::selectionChanged, this, handleSelectionChanged);
     rowLayout->addWidget(letterLabel);
 
+    rowLayout->addStretch();
+
     auto* picButton = new QToolButton(this);
     const auto& picIcon = getShowPicIcon(style());
     picButton->setIcon(picIcon);
@@ -112,6 +124,19 @@ LetterSelector::LetterSelector(int32_t selectorId, QAbstractItemModel* strings, 
     connect(clearButton, &QToolButton::clicked, &mListView, &QAbstractItemView::clearSelection);
     connect(mPinButton, &QToolButton::toggled, clearButton, &QWidget::setDisabled);
     rowLayout->addWidget(clearButton);
+
+    const auto& solveIcon = getSolveIcon(style());
+    mSolveButton->setIcon(solveIcon);
+    connect(mSolveButton, &QToolButton::clicked, this, [this] {
+        mPinButton->setChecked(false);
+        const auto* srcModel = mFilterModel.sourceModel();
+        const auto solutionIdx = srcModel->index(mSolutionRow, 0);
+        const auto& solutionText = srcModel->data(solutionIdx).toString();
+        updateFilter(true, solutionText);
+        setState(true, solutionText);
+    });
+    mSolveButton->setHidden(true);
+    rowLayout->addWidget(mSolveButton);
 
     mainLayout->addLayout(rowLayout);
 }
@@ -167,6 +192,12 @@ QChar LetterSelector::getLetter() const
 void LetterSelector::setPicture(const QString& path)
 {
     mPicture.load(path);
+}
+
+void LetterSelector::setSolutionRow(int row)
+{
+    mSolutionRow = row;
+    mSolveButton->setVisible(mSolutionRow >= 0 && mSolutionRow < mFilterModel.sourceModel()->rowCount());
 }
 
 // protected

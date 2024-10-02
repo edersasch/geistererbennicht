@@ -7,18 +7,18 @@ can be chosen that matches the contained picture.
 The left button opens a second window that shows the complete picture. The
 right one shows the help in the browser.
 
-In each list one word can be chosen. Under the list the number of the word's
-letter that contributes to the solution is shown. If a word is selected, the
-corresponding letter shows up in the middle. The letter also appears in the top
-window border at the corresponding position.
+In each list one word can be chosen. Under the list the position of the word's
+solution letter is shown. If a word is selected, the corresponding letter shows
+up after its position indicator. It also appears in the top window
+border at the correct place.
 
-To the right under each list are three buttons:
+To the right under each list are four buttons (from left to right):
 
-- The left button emphasizes the background picture, to support spotting which
-  word could match.
-- The middle button has a pause symbol as known from a media player. If a word
-  is selected, it will be fixed in that list and removed from the 19 other
-  lists. Pushing the button again stops the fix and shows it in the other lists
-  again.
-- The right button, with the media player stop symbol, deselects the word,
-  which causes the solution letter to disappear.
+1. emphasizes the background picture, to support spotting which word could
+   match
+1. (pause symbol) fixes the selected word and removes it from the 19 other
+   lists. Pushing the button again stops the fix and shows it in the other
+   lists again.
+1. (stop symbol) deselects the word, which causes the solution letter to
+   disappear
+1. (play symbol) selects the correct word in the list

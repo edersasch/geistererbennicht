@@ -93,6 +93,14 @@ constexpr std::array<std::string_view, 20> picArray
     ":/r4c1", ":/r4c2", ":/r4c3", ":/r4c4", ":/r4c5",
 };
 
+constexpr std::array<std::size_t, 20> stringArraySolutionEntry
+{
+    11,  5, 17, 12,  0,
+    13,  4, 14,  6,  2,
+     7,  8, 19, 15, 18,
+    16,  1, 10,  9,  3
+};
+
 constexpr auto selectorState    = "SelectorState";
 constexpr auto picviewGeometry  = "PicviewGeometry";
 constexpr auto mainGeometry     = "MainGeometry";
@@ -135,6 +143,7 @@ MainWindow::MainWindow(QWidget* parent)
 : QMainWindow(parent)
 {
     static_assert(stringArray.size() == picArray.size());
+    static_assert(stringArray.size() == stringArraySolutionEntry.size());
     QStringList stringList;
     stringList.reserve(stringArray.size());
     for (const auto& str : stringArray) {
@@ -173,6 +182,8 @@ MainWindow::MainWindow(QWidget* parent)
         for (auto pos : positions) {
             auto* letterSel = new LetterSelector(selectorId, strings, pos, this);
             letterSel->setPicture(picArray.at(static_cast<std::size_t>(selectorId)).data());
+            const auto solutionRow = stringArraySolutionEntry.at(static_cast<std::size_t>(selectorId));
+            letterSel->setSolutionRow(solutionRow);
             row->addWidget(letterSel);
             connect(letterSel, &LetterSelector::stateChanged, letterSel, stateChanged);
             connect(this, &MainWindow::updateFilter, letterSel, &LetterSelector::updateFilter);

@@ -19,8 +19,9 @@ public:
     ~LetterSelector() override;
     void updateFilter(bool enable, const QString& text);
     void setState(bool pin, const QString& text);
-    QChar getLetter() const;
+    [[nodiscard]] QChar getLetter() const;
     void setPicture(const QString& path);
+    void setSolutionRow(int row);
 
 signals:
     void stateChanged(std::int32_t selectorId, bool isPinned, const QString& text);
@@ -40,8 +41,10 @@ private:
     QSortFilterProxyModel mFilterModel {};
     QStringList mFilteredStrings;
     QToolButton* mPinButton;
+    QToolButton* mSolveButton;
     QChar mLetter {'_'};
     QImage mPicture;
+    int mSolutionRow = -1;
 };
 
 #endif // SRC_LETTERSELECTOR_HPP
