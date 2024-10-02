@@ -176,7 +176,7 @@ void LetterSelector::setState(bool pin, const QString& text)
         const auto idx = mFilterModel.index(i, 0);
         const auto textData = mFilterModel.data(idx).toString();
         if (textData == text) {
-            mListView.selectionModel()->select(idx, QItemSelectionModel::SelectCurrent);
+            mListView.selectionModel()->select(idx, QItemSelectionModel::Clear | QItemSelectionModel::SelectCurrent);
             mListView.scrollTo(idx);
             mPinButton->setChecked(pin);
             break;
